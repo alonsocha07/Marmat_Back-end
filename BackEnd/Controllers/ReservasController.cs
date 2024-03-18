@@ -1,0 +1,175 @@
+﻿using BackEnd.Models;
+using Common.Cache;
+using Marmat.BLL.Contracts;
+using Marmat.BLL.Implementations;
+using Marmat.DML;
+using Microsoft.AspNetCore.Mvc;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace BackEnd.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ReservasController : ControllerBase
+    {
+        #region Constructor
+        private IReservalBLL _reservaBLL;
+        public ReservasController()
+        {
+            _reservaBLL = new ReservaBLLImpl();
+        }
+        #endregion
+
+        #region Conversiones
+        ReservaModel Convertir(Reserva entity)
+        {
+            return new ReservaModel
+            {
+                IdReserva = entity.IdReserva,
+                FechaReserva = entity.FechaReserva,
+                IdAreacomun = entity.IdAreacomun
+            };
+        }
+
+        Reserva Convertir(ReservaModel entity)
+        {
+            return new Reserva
+            {
+                IdReserva = entity.IdReserva,
+                FechaReserva = entity.FechaReserva,
+                IdAreacomun = entity.IdAreacomun
+            };
+        }
+        #endregion
+
+        #region Create
+        // POST api/<AvisoController>
+        [HttpPost]
+        public JsonResult Post([FromBody] ReservaModel entity)
+        {
+            try
+            {
+                Reserva aviso = Convertir(entity);
+                _reservaBLL.Add(aviso);
+                return new JsonResult(Convertir(aviso));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        #endregion
+
+        #region Read
+        // GET: api/<AvisoController>
+        [HttpGet]
+        public JsonResult Get()
+        {
+            try
+            {
+                IEnumerable<Reserva> entity;
+                entity = _reservaBLL.GetAll();
+
+                List<ReservaModel> result = new List<ReservaModel>();
+
+                foreach (Reserva item in entity)
+                {
+                    result.Add(Convertir(item));
+                }
+                return new JsonResult(result);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+        [Route("GetByNameReserva")]
+        [HttpGet]
+        public JsonResult GetByName(string name)
+        {
+            try
+            {
+                return new JsonResult(_reservaBLL.GetByName(name));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        // GET api/<AvisoController>/5
+        [HttpGet("{id}", Name = "GetReserva")]
+        public JsonResult Get(int id)
+        {
+            try
+            {
+                Reserva entity;
+                entity = _reservaBLL.Get(id);
+
+                return new JsonResult(Convertir(entity));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        #endregion
+
+        #region Update
+        // PUT api/<AvisoController>/5
+        [HttpPut]
+        public JsonResult Put([FromBody] ReservaModel entity)
+        {
+            try
+            {
+                _reservaBLL.Update(Convertir(entity));
+                return new JsonResult(entity);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        #endregion
+
+        #region Delete
+        // DELETE api/<AvisoController>/5
+        [HttpDelete("{id}")]
+        public JsonResult Delete(int id)
+        {
+            try
+            {
+                Reserva entity = new Reserva { IdReserva = id };
+
+                _reservaBLL.Remove(entity);
+                return new JsonResult(entity);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        #endregion
+
+        [Route("DateCheck")]
+        [HttpPost]
+        public JsonResult DateCheck([FromBody] ReservaModel entity)
+        {
+            // verifica fecha y area comun
+            try
+            {
+                Reserva objeto = Convertir(entity);
+                return new JsonResult(_reservaBLL.DateCheck(objeto.FechaReserva, objeto.IdAreacomun.Value));
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
+}
